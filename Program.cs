@@ -207,7 +207,7 @@ namespace L41_cardBlock
 
         class Player
         {
-            private List<Card> hand = new List<Card>();
+            private List<Card> _hand = new List<Card>();
             private string _name;
 
             public Player(string name)
@@ -225,21 +225,21 @@ namespace L41_cardBlock
 
             public void TakeCard(CardDeck deck)
             {
-                hand.Add(deck.GiveCard());
+                _hand.Add(deck.GiveCard());
             }
 
             public void ShowHand()
             {
-                if (hand.Count == 0)
+                if (_hand.Count == 0)
                     Console.WriteLine("У вас нет карт.");
                 else
-                    foreach (var card in hand)
+                    foreach (var card in _hand)
                         card.ShowInfo();
             }
 
             public int CountCards()
             {
-                return hand.Count();
+                return _hand.Count();
             }
         }
 
