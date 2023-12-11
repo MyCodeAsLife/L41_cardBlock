@@ -33,11 +33,7 @@ namespace L41_cardBlock
                 Console.WriteLine($"Меню.\n{CommandTakeCard} - Сколько карт взять.\n" +
                                   $"{CommandShowCards} - Показать карты.\n{CommandExit} - Выход.");
                 Console.WriteLine(new string(delimiterSymbol, delimiterLenght));
-
-                if (currentPlayer != null)
-                    Console.WriteLine($"Игрок: {currentPlayer.Name}. Количество карт: {currentPlayer.CountCards()}");
-                else
-                    Console.WriteLine("Вы еще не выбрали игрока.");
+                Console.WriteLine($"Игрок: {currentPlayer.Name}. Количество карт: {currentPlayer.CountCards()}");
 
                 Console.Write("\nВыберите номер действия: ");
                 int numberMenu = GetUserInput();
