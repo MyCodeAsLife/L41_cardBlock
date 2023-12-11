@@ -129,8 +129,8 @@ namespace L41_cardBlock
 
             public CardDeck()
             {
-                for (int i = 0; i < (int)CardSuit.MaxCount; i++)
-                    for (int j = 0; j < (int)CardMeaning.MaxCount; j++)
+                for (int i = 0; i < (int)CardSuit.Max; i++)
+                    for (int j = 0; j < (int)CardMeaning.Max; j++)
                         _cardDeck.Push(new Card((CardSuit)i, (CardMeaning)j));
 
                 for (int i = 0; i < _cardDeck.Count; i++)
@@ -208,20 +208,13 @@ namespace L41_cardBlock
         class Player
         {
             private List<Card> _hand = new List<Card>();
-            private string _name;
 
             public Player(string name)
             {
-                _name = name;
+                this.Name = name;
             }
 
-            public string Name
-            {
-                get
-                {
-                    return _name;
-                }
-            }
+            public string Name { get; private set; }
 
             public void TakeCard(CardDeck deck)
             {
@@ -249,7 +242,7 @@ namespace L41_cardBlock
             Spades,
             Diamonds,
             Clubs,
-            MaxCount,
+            Max,
         }
 
         enum CardMeaning
@@ -268,7 +261,7 @@ namespace L41_cardBlock
             Four,
             Three,
             Two,
-            MaxCount,
+            Max,
         }
     }
 }
