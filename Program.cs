@@ -32,32 +32,40 @@ namespace L41_cardBlock
                 Console.WriteLine($"Игрок: {currentPlayer.Name}. Количество карт: {currentPlayer.CountCards()}");
 
                 Console.Write("\nВыберите номер действия: ");
-                int numberMenu = GetUserInput();
-
-                switch (numberMenu)
+                if (int.TryParse(Console.ReadLine(), out int numberMenu))
                 {
-                    case CommandTakeCard:
-                        TakeCards(currentPlayer, cardDeck);
-                        break;
+                    Console.Clear();
 
-                    case CommandShowCards:
-                        currentPlayer.ShowHand();
-                        break;
+                    switch (numberMenu)
+                    {
+                        case CommandTakeCard:
+                            TakeCards(currentPlayer, cardDeck);
+                            break;
 
-                    case CommandExit:
-                        isOpen = false;
-                        break;
+                        case CommandShowCards:
+                            currentPlayer.ShowHand();
+                            break;
 
-                    default:
-                        ShowError();
-                        break;
+                        case CommandExit:
+                            isOpen = false;
+                            break;
+
+                        default:
+                            ShowError();
+                            break;
+                    }
                 }
+
+                Console.ReadKey(true);
             }
         }
 
         static Player SelectPlayer(Player[] players)
         {
-            while (true)
+            Player player = null;
+            bool isFind = true;
+
+            while (isFind)
             {
                 Console.Clear();
                 Console.WriteLine($"На выбор {players.Length} игрока(ов):");
@@ -65,32 +73,41 @@ namespace L41_cardBlock
                 for (int i = 0; i < players.Length; i++)
                     Console.WriteLine($"{i + 1} - {players[i].Name}.");
 
-                Console.Write("Выбирите номер игрока: ");
-                int numPlayers = GetUserInput() - 1;
+                Console.Write("Выберите номер игрока: ");
+                int numPlayers = GetFormatInput() - 1;
 
                 if (numPlayers < players.Length && numPlayers >= 0)
-                    return players[numPlayers];
+                {
+                    player = players[numPlayers];
+                    isFind = false;
+                }
                 else
+                {
                     ShowError();
+                }
 
                 Console.ReadKey(true);
             }
+
+            return player;
         }
 
         static void TakeCards(Player player, CardDeck deck)
         {
-            while (true)
+            bool isNotCorrect = true;
+
+            while (isNotCorrect)
             {
                 Console.Clear();
                 Console.Write("Сколько карт вы хотите взять?: ");
-                int countCards = GetUserInput();
+                int countCards = GetFormatInput();
 
                 if (countCards >= 0 && countCards < deck.Count)
                 {
                     for (int i = 0; i < countCards; i++)
                         player.TakeCard(deck);
 
-                    break;
+                    isNotCorrect = false;
                 }
                 else
                 {
@@ -105,155 +122,145 @@ namespace L41_cardBlock
             Console.ReadKey(true);
         }
 
-        static int GetUserInput()
+        static int GetFormatInput()
         {
-            int userInput;
-
-            if (int.TryParse(Console.ReadLine(), out userInput))
+            if (int.TryParse(Console.ReadLine(), out int userInput))
                 return userInput;
             else
                 return -1;
         }
+    }
 
-        class CardDeck
+    class CardDeck
+    {
+        private Stack<Card> _cardDeck = new Stack<Card>();
+
+        public CardDeck()
         {
-            private Stack<Card> _cardDeck = new Stack<Card>();
+            for (int i = 0; i < (int)CardSuit.Max; i++)
+                for (int j = 0; j < (int)CardMeaning.Max; j++)
+                    _cardDeck.Push(new Card((CardSuit)i, (CardMeaning)j));
 
-            public CardDeck()
+            for (int i = 0; i < _cardDeck.Count; i++)
+                Shuffle(_cardDeck);
+        }
+
+        public int Count
+        {
+            get
             {
-                for (int i = 0; i < (int)CardSuit.Max; i++)
-                    for (int j = 0; j < (int)CardMeaning.Max; j++)
-                        _cardDeck.Push(new Card((CardSuit)i, (CardMeaning)j));
-
-                for (int i = 0; i < _cardDeck.Count; i++)
-                    Shuffle(_cardDeck);
+                return _cardDeck.Count;
             }
+        }
 
-            public int Count
+        public void Shuffle(Stack<Card> deck)
+        {
+            Random random = new Random();
+            Card[] tempDeck = new Card[deck.Count];
+
+            for (int i = 0; i < tempDeck.Length; i++)
+                tempDeck[i] = deck.Pop();
+
+            int countCycles = random.Next(0, int.MaxValue) % tempDeck.Length;
+            int numElement = 0;
+            Card tempCard;
+
+            for (int i = 0; i < countCycles; i++)
             {
-                get
+                for (int j = 0; j < tempDeck.Length; j++)
                 {
-                    return _cardDeck.Count;
+                    if (numElement == j)
+                        numElement = random.Next(0, tempDeck.Length - 1);
+
+                    tempCard = tempDeck[numElement];
+                    tempDeck[numElement] = tempDeck[j];
+                    tempDeck[j] = tempCard;
                 }
             }
 
-            public void Shuffle(Stack<Card> deck)
-            {
-                Random random = new Random();
-                Card[] tempDeck = new Card[deck.Count];
-
-                for (int i = 0; i < tempDeck.Length; i++)
-                    tempDeck[i] = deck.Pop();
-
-                int countCycles = random.Next(0, int.MaxValue) % tempDeck.Length;
-                int numElement = 0;
-                Card tempCard;
-
-                for (int i = 0; i < countCycles; i++)
-                {
-                    for (int j = 0; j < tempDeck.Length; j++)
-                    {
-                        if (numElement == j)
-                            numElement = random.Next(0, tempDeck.Length - 1);
-
-                        tempCard = tempDeck[numElement];
-                        tempDeck[numElement] = tempDeck[j];
-                        tempDeck[j] = tempCard;
-                    }
-                }
-
-                for (int i = 0; i < tempDeck.Length; i++)
-                    deck.Push(tempDeck[i]);
-            }
-
-            public Card GiveCard()
-            {
-                return _cardDeck.Pop();
-            }
-
-            public void ShowDeck()
-            {
-                foreach (var item in _cardDeck)
-                    item.ShowInfo();
-
-                Console.WriteLine($"\nВ колоде осталось: {Count} карт.");
-            }
+            for (int i = 0; i < tempDeck.Length; i++)
+                deck.Push(tempDeck[i]);
         }
 
-        class Card
+        public Card GiveCard()
         {
-            private CardSuit _suit;
-            private CardMeaning _meaning;
-
-            public Card(CardSuit suit, CardMeaning meaning)
-            {
-                _suit = suit;
-                _meaning = meaning;
-            }
-
-            public void ShowInfo()
-            {
-                Console.WriteLine($"Масть: {_suit}, значение: {_meaning}");
-            }
+            return _cardDeck.Pop();
         }
+    }
 
-        class Player
+    class Card
+    {
+        private CardSuit _suit;
+        private CardMeaning _meaning;
+
+        public Card(CardSuit suit, CardMeaning meaning)
         {
-            private List<Card> _hand = new List<Card>();
-
-            public Player(string name)
-            {
-                this.Name = name;
-            }
-
-            public string Name { get; private set; }
-
-            public void TakeCard(CardDeck deck)
-            {
-                _hand.Add(deck.GiveCard());
-            }
-
-            public void ShowHand()
-            {
-                if (_hand.Count == 0)
-                    Console.WriteLine("У вас нет карт.");
-                else
-                    foreach (var card in _hand)
-                        card.ShowInfo();
-            }
-
-            public int CountCards()
-            {
-                return _hand.Count();
-            }
+            _suit = suit;
+            _meaning = meaning;
         }
 
-        enum CardSuit
+        public void ShowInfo()
         {
-            Hearts,
-            Spades,
-            Diamonds,
-            Clubs,
-            Max,
+            Console.WriteLine($"Масть: {_suit}, значение: {_meaning}");
+        }
+    }
+
+    class Player
+    {
+        private List<Card> _hand = new List<Card>();
+
+        public Player(string name)
+        {
+            this.Name = name;
         }
 
-        enum CardMeaning
+        public string Name { get; private set; }
+
+        public void TakeCard(CardDeck deck)
         {
-            Joker,
-            Ace,
-            King,
-            Queen,
-            Jack,
-            Ten,
-            Nine,
-            Eight,
-            Seven,
-            Six,
-            Five,
-            Four,
-            Three,
-            Two,
-            Max,
+            _hand.Add(deck.GiveCard());
         }
+
+        public void ShowHand()
+        {
+            if (_hand.Count == 0)
+                Console.WriteLine("У вас нет карт.");
+            else
+                foreach (var card in _hand)
+                    card.ShowInfo();
+        }
+
+        public int CountCards()
+        {
+            return _hand.Count();
+        }
+    }
+
+    enum CardSuit
+    {
+        Hearts,
+        Spades,
+        Diamonds,
+        Clubs,
+        Max,
+    }
+
+    enum CardMeaning
+    {
+        Joker,
+        Ace,
+        King,
+        Queen,
+        Jack,
+        Ten,
+        Nine,
+        Eight,
+        Seven,
+        Six,
+        Five,
+        Four,
+        Three,
+        Two,
+        Max,
     }
 }
