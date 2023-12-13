@@ -13,7 +13,7 @@ namespace L41_cardBlock
             const int CommandExit = 3;
 
             Player[] players = { new Player("Josh"), new Player("Sam") };
-            Player currentPlayer = SelectPlayer(players);
+            Player currentPlayer = Player.SelectPlayer(players);
 
             CardDeck cardDeck = new CardDeck();
 
@@ -39,7 +39,7 @@ namespace L41_cardBlock
                     switch (numberMenu)
                     {
                         case CommandTakeCard:
-                            TakeCards(currentPlayer, cardDeck);
+                            currentPlayer.TakeCards(cardDeck);
                             break;
 
                         case CommandShowCards:
@@ -51,7 +51,7 @@ namespace L41_cardBlock
                             break;
 
                         default:
-                            ShowError();
+                            Error.Show();
                             break;
                     }
                 }
@@ -59,75 +59,14 @@ namespace L41_cardBlock
                 Console.ReadKey(true);
             }
         }
+    }
 
-        static Player SelectPlayer(Player[] players)
-        {
-            Player player = null;
-            bool isFind = true;
-
-            while (isFind)
-            {
-                Console.Clear();
-                Console.WriteLine($"На выбор {players.Length} игрока(ов):");
-
-                for (int i = 0; i < players.Length; i++)
-                    Console.WriteLine($"{i + 1} - {players[i].Name}.");
-
-                Console.Write("Выберите номер игрока: ");
-                int numPlayers = GetFormatInput() - 1;
-
-                if (numPlayers < players.Length && numPlayers >= 0)
-                {
-                    player = players[numPlayers];
-                    isFind = false;
-                }
-                else
-                {
-                    ShowError();
-                }
-
-                Console.ReadKey(true);
-            }
-
-            return player;
-        }
-
-        static void TakeCards(Player player, CardDeck deck)
-        {
-            bool isNotCorrect = true;
-
-            while (isNotCorrect)
-            {
-                Console.Clear();
-                Console.Write("Сколько карт вы хотите взять?: ");
-                int countCards = GetFormatInput();
-
-                if (countCards >= 0 && countCards < deck.Count)
-                {
-                    for (int i = 0; i < countCards; i++)
-                        player.TakeCard(deck);
-
-                    isNotCorrect = false;
-                }
-                else
-                {
-                    ShowError();
-                }
-            }
-        }
-
-        static void ShowError()
+    class Error
+    {
+        public static void Show()
         {
             Console.WriteLine("Вы ввели некорректное значение.\nДля продолжения нажмите любую клавишу...");
             Console.ReadKey(true);
-        }
-
-        static int GetFormatInput()
-        {
-            if (int.TryParse(Console.ReadLine(), out int userInput))
-                return userInput;
-            else
-                return -1;
         }
     }
 
@@ -216,9 +155,60 @@ namespace L41_cardBlock
 
         public string Name { get; private set; }
 
-        public void TakeCard(CardDeck deck)
+        public static Player SelectPlayer(Player[] players)
         {
-            _hand.Add(deck.GiveCard());
+            Player player = null;
+            bool isFind = true;
+
+            while (isFind)
+            {
+                Console.Clear();
+                Console.WriteLine($"На выбор {players.Length} игрока(ов):");
+
+                for (int i = 0; i < players.Length; i++)
+                    Console.WriteLine($"{i + 1} - {players[i].Name}.");
+
+                Console.Write("Выберите номер игрока: ");
+                int numPlayers = GetFormatInput() - 1;
+
+                if (numPlayers < players.Length && numPlayers >= 0)
+                {
+                    player = players[numPlayers];
+                    isFind = false;
+                }
+                else
+                {
+                    Error.Show();
+                }
+
+                Console.ReadKey(true);
+            }
+
+            return player;
+        }
+
+        public void TakeCards(CardDeck deck)
+        {
+            bool isNotCorrect = true;
+
+            while (isNotCorrect)
+            {
+                Console.Clear();
+                Console.Write("Сколько карт вы хотите взять?: ");
+                int countCards = GetFormatInput();
+
+                if (countCards >= 0 && countCards < deck.Count)
+                {
+                    for (int i = 0; i < countCards; i++)
+                        _hand.Add(deck.GiveCard());
+
+                    isNotCorrect = false;
+                }
+                else
+                {
+                    Error.Show();
+                }
+            }
         }
 
         public void ShowHand()
@@ -233,6 +223,14 @@ namespace L41_cardBlock
         public int CountCards()
         {
             return _hand.Count();
+        }
+
+        static int GetFormatInput()
+        {
+            if (int.TryParse(Console.ReadLine(), out int userInput))
+                return userInput;
+            else
+                return -1;
         }
     }
 
