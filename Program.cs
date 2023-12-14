@@ -43,7 +43,7 @@ namespace L41_cardBlock
                     switch (numberMenu)
                     {
                         case CommandTakeCard:
-                            solitaire.CurrentPlayer.TakeCards(solitaire);
+                            solitaire.CurrentPlayer.RequestCards(solitaire);
                             break;
 
                         case CommandShowCards:
@@ -251,7 +251,7 @@ namespace L41_cardBlock
             return _hand.Count();
         }
 
-        public void TakeCards(Game solitaire)
+        public void RequestCards(Game solitaire)
         {
             bool isNotCorrect = true;
 
