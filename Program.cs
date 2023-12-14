@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -67,8 +68,8 @@ namespace L41_cardBlock
     class Game
     {
         private CardDeck _playingDeck;
-        List<Player> _players = new List<Player>();
-        Player _currentPlayer;
+        private List<Player> _players = new List<Player>();
+        private Player _currentPlayer;
 
         public Game(CardDeck deck)
         {
@@ -77,7 +78,14 @@ namespace L41_cardBlock
 
         public int DeckSize => _playingDeck.Count;
 
-        public Player CurrentPlayer => _currentPlayer;
+        public Player CurrentPlayer
+        {
+            get
+            {
+                Player tempPlayer = new Player(_currentPlayer);
+                return tempPlayer;
+            }
+        }
 
         public void AddPlayer(Player player)
         {
@@ -102,28 +110,24 @@ namespace L41_cardBlock
                     Console.WriteLine($"{i + 1} - {_players[i].Name}.");
 
                 Console.Write("Выберите номер игрока: ");
-                int numPlayers = GetFormatInput() - 1;
 
-                if (numPlayers < _players.Count && numPlayers >= 0)
+                if (int.TryParse(Console.ReadLine(), out int numPlayers))
                 {
-                    _currentPlayer = _players[numPlayers];
-                    isFind = false;
-                }
-                else
-                {
-                    Error.Show();
+                    numPlayers--;
+
+                    if (numPlayers < _players.Count && numPlayers >= 0)
+                    {
+                        _currentPlayer = _players[numPlayers];
+                        isFind = false;
+                    }
+                    else
+                    {
+                        Error.Show();
+                    }
                 }
 
                 Console.ReadKey(true);
             }
-        }
-
-        private int GetFormatInput()
-        {
-            if (int.TryParse(Console.ReadLine(), out int userInput))
-                return userInput;
-            else
-                return -1;
         }
     }
 
@@ -138,30 +142,30 @@ namespace L41_cardBlock
 
     class CardDeck
     {
-        Random _random;
-        private Stack<Card> _cardDeck = new Stack<Card>();
+        private Random _random;
+        private Stack<Card> _deck = new Stack<Card>();
 
         public CardDeck(Random random)
         {
             _random = random;
-            FormDeck();
+            Fill();
         }
 
-        public int Count => _cardDeck.Count;
+        public int Count => _deck.Count;
 
         public Card GiveCard()
         {
-            return _cardDeck.Pop();
+            return _deck.Pop();
         }
 
-        private void FormDeck()
+        private void Fill()
         {
             for (int i = 0; i < (int)CardSuit.Max; i++)
                 for (int j = 0; j < (int)CardMeaning.Max; j++)
-                    _cardDeck.Push(new Card((CardSuit)i, (CardMeaning)j));
+                    _deck.Push(new Card((CardSuit)i, (CardMeaning)j));
 
-            for (int i = 0; i < _cardDeck.Count; i++)
-                Shuffle(_cardDeck);
+            for (int i = 0; i < _deck.Count; i++)
+                Shuffle(_deck);
         }
 
         private void Shuffle(Stack<Card> deck)
@@ -204,6 +208,12 @@ namespace L41_cardBlock
             _meaning = meaning;
         }
 
+        public Card(Card card)
+        {
+            _suit = card._suit;
+            _meaning = card._meaning;
+        }
+
         public void ShowInfo()
         {
             Console.WriteLine($"Масть: {_suit}, значение: {_meaning}");
@@ -217,6 +227,12 @@ namespace L41_cardBlock
         public Player(string name)
         {
             Name = name;
+        }
+
+        public Player(Player player)
+        {
+            for (int i = 0; i < player.CountCards(); i++)
+                _hand.Add(player.GetCard(i));
         }
 
         public string Name { get; private set; }
@@ -263,6 +279,11 @@ namespace L41_cardBlock
                     Error.Show();
                 }
             }
+        }
+
+        private Card GetCard(int index)
+        {
+            return new Card(_hand[index]);
         }
     }
 
