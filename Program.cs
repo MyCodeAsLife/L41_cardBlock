@@ -43,7 +43,7 @@ namespace L41_cardBlock
                     switch (numberMenu)
                     {
                         case CommandTakeCard:
-                            solitaire.CurrentPlayer.RequestCards(solitaire);
+                            solitaire.DealCards();
                             break;
 
                         case CommandShowCards:
@@ -92,9 +92,34 @@ namespace L41_cardBlock
             _players.Add(player);
         }
 
-        public Card GiveCard()
+        public void DealCards()
         {
-            return _playingDeck.GiveCard();
+            bool isNotCorrect = true;
+
+            while (isNotCorrect)
+            {
+                Console.Clear();
+                Console.Write("Сколько карт вы хотите взять?: ");
+
+                if (int.TryParse(Console.ReadLine(), out int countCards))
+                {
+                    if (countCards >= 0 && countCards < DeckSize)
+                    {
+                        for (int i = 0; i < countCards; i++)
+                            _currentPlayer.TakeCard(GiveCard());
+
+                        isNotCorrect = false;
+                    }
+                    else
+                    {
+                        Error.Show();
+                    }
+                }
+                else
+                {
+                    Error.Show();
+                }
+            }
         }
 
         public void SelectPlayer()
@@ -128,6 +153,11 @@ namespace L41_cardBlock
 
                 Console.ReadKey(true);
             }
+        }
+
+        private Card GiveCard()
+        {
+            return _playingDeck.GiveCard();
         }
     }
 
@@ -251,34 +281,9 @@ namespace L41_cardBlock
             return _hand.Count();
         }
 
-        public void RequestCards(Game solitaire)
+        public void TakeCard(Card card)
         {
-            bool isNotCorrect = true;
-
-            while (isNotCorrect)
-            {
-                Console.Clear();
-                Console.Write("Сколько карт вы хотите взять?: ");
-
-                if (int.TryParse(Console.ReadLine(), out int countCards))
-                {
-                    if (countCards >= 0 && countCards < solitaire.DeckSize)
-                    {
-                        for (int i = 0; i < countCards; i++)
-                            _hand.Add(solitaire.GiveCard());
-
-                        isNotCorrect = false;
-                    }
-                    else
-                    {
-                        Error.Show();
-                    }
-                }
-                else
-                {
-                    Error.Show();
-                }
-            }
+            _hand.Add(card);
         }
 
         private Card GetCard(int index)
