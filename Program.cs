@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 
 namespace L41_cardBlock
 {
@@ -17,24 +18,24 @@ namespace L41_cardBlock
 
     class Game
     {
-        private const int CommandTakeCard = 1;
-        private const int CommandShowCards = 2;
-        private const int CommandExit = 3;
+        private const int CommandPlayerTakeCard = 1;
+        private const int CommandPlayerShowCards = 2;
+        private const int CommandGameExit = 3;
 
         private Random _random;
-        private CardDeck _playingDeck;
+        private Deck _deck;
         private Player _currentPlayer;
         private List<Player> _players = new List<Player>();
 
         public Game(Random random)
         {
             _random = random;
-            _playingDeck = new CardDeck(_random);
+            _deck = new Deck(_random);
 
             StartingFill();
         }
 
-        public int DeckSize => _playingDeck.Count;
+        public int DeckSize => _deck.Count;
 
         public void Run()
         {
@@ -43,8 +44,8 @@ namespace L41_cardBlock
             while (isOpen)
             {
                 Console.Clear();
-                Console.WriteLine($"Меню.\n{CommandTakeCard} - Сколько карт взять.\n" +
-                                  $"{CommandShowCards} - Показать карты.\n{CommandExit} - Выход.");
+                Console.WriteLine($"Меню.\n{CommandPlayerTakeCard} - Сколько карт взять.\n" +
+                                  $"{CommandPlayerShowCards} - Показать карты.\n{CommandGameExit} - Выход.");
                 Console.WriteLine(new string(FormatOutput.DelimiterSymbol, FormatOutput.DelimiterLenght));
                 Console.WriteLine($"Игрок: {_currentPlayer.Name}. Количество карт: {_currentPlayer.CountCards()}");
 
@@ -55,15 +56,15 @@ namespace L41_cardBlock
 
                     switch (numberMenu)
                     {
-                        case CommandTakeCard:
+                        case CommandPlayerTakeCard:
                             DealCards();
                             break;
 
-                        case CommandShowCards:
+                        case CommandPlayerShowCards:
                             _currentPlayer.ShowHand();
                             break;
 
-                        case CommandExit:
+                        case CommandGameExit:
                             isOpen = false;
                             break;
 
@@ -95,7 +96,8 @@ namespace L41_cardBlock
                     if (cardsCount >= 0 && cardsCount < DeckSize)
                     {
                         for (int i = 0; i < cardsCount; i++)
-                            _currentPlayer.TakeCard(GiveCard());
+                            if (_deck.TryGiveCard(out Card card))
+                                _currentPlayer.TakeCard(card);
 
                         isNotCorrect = false;
                     }
@@ -148,11 +150,6 @@ namespace L41_cardBlock
             }
         }
 
-        private Card GiveCard()
-        {
-            return _playingDeck.GiveCard();
-        }
-
         private void StartingFill()
         {
             _players.Add(new Player("Josh"));
@@ -180,12 +177,12 @@ namespace L41_cardBlock
         }
     }
 
-    class CardDeck
+    class Deck
     {
         private Random _random;
         private Stack<Card> _cards = new Stack<Card>();
 
-        public CardDeck(Random random)
+        public Deck(Random random)
         {
             _random = random;
             StartingFill();
@@ -193,9 +190,18 @@ namespace L41_cardBlock
 
         public int Count => _cards.Count;
 
-        public Card GiveCard()
+        public bool TryGiveCard(out Card card)
         {
-            return _cards.Pop();
+            if (_cards.Count > 0)
+            {
+                card = _cards.Pop();
+                return true;
+            }
+            else
+            {
+                card = null;
+                return false;
+            }
         }
 
         private void StartingFill()
@@ -260,7 +266,8 @@ namespace L41_cardBlock
         public Player(Player player)
         {
             for (int i = 0; i < player.CountCards(); i++)
-                _hand.Add(player.GetCard(i));
+                if (player.TryGetCard(i, out Card card))
+                    _hand.Add(card);
         }
 
         public string Name { get; private set; }
@@ -281,12 +288,22 @@ namespace L41_cardBlock
 
         public void TakeCard(Card card)
         {
-            _hand.Add(card);
+            if (card != null)
+                _hand.Add(card);
         }
 
-        private Card GetCard(int index)
+        private bool TryGetCard(int index, out Card card)
         {
-            return new Card(_hand[index]);
+            if (index < _hand.Count || index >= 0)
+            {
+                card = new Card(_hand[index]);
+                return true;
+            }
+            else
+            {
+                card = null;
+                return false;
+            }
         }
     }
 
