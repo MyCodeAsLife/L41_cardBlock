@@ -9,8 +9,7 @@ namespace L41_cardBlock
     {
         static void Main(string[] args)
         {
-            Random random = new Random();
-            Game solitaire = new Game(random);
+            Game solitaire = new Game(new Random());
 
             solitaire.Run();
         }
